@@ -4,8 +4,6 @@
 #if defined(_WIN32)
 #define NOMINMAX
 #include <Windows.h>
-#elif defined(__linux__)
-#include <GLFW/glfw3native.h>
 #endif
 
 namespace logx
@@ -48,6 +46,20 @@ namespace logx
 
 			return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
 		}
+#elif defined(__linux__)
+		static const char* convert_color_to_linux(Color color)
+		{
+			switch (color)
+			{
+			case Color::red: return "\033[31m";
+			case Color::green: return "\033[32m";
+			case Color::blue: return "\033[34m";
+			case Color::yellow: return "\033[33m";
+			case Color::white: return "\033[37m";
+			}
+
+			return "\033[37m";
+		}
 #endif
 
 		template <typename T>
@@ -56,13 +68,13 @@ namespace logx
 #if defined(_WIN32)
 			HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 			SetConsoleTextAttribute(hConsole, convert_color_to_windows(_color));
-#endif
 			_stream << value;
-
-#if defined(_WIN32)
 			SetConsoleTextAttribute(hConsole, convert_color_to_windows(Color::white));
+#elif defined(__linux__)
+			const char* colorSpecPrefix = convert_color_to_linux(_color);
+			const char* colorSpecPostfix = "\033[0m";
+			_stream << colorSpecPrefix << value << colorSpecPostfix;
 #endif
-
 			return *this;
 		};
 
