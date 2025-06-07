@@ -2,9 +2,14 @@
 
 namespace logx
 {
-	WLogger::WLogger(std::wostream& stream, std::wstring_view prefix, Color color, const char* file, size_t line) :
-		AbstractLogger<std::wostream, std::wstring_view>(stream, prefix, color, file, line)
+	WLogger::WLogger(std::wostream& stream, std::wstring_view prefix, Color color) :
+		AbstractLogger<std::wostream, std::wstring_view>(stream, prefix, color)
 	{
+		this->operator<<(_prefix);
+	}
 
+	WLogger::~WLogger()
+	{
+		_stream << std::endl;
 	}
 }

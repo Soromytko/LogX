@@ -9,7 +9,7 @@ namespace logx
 	class CLogger : public AbstractLogger<std::ostream, std::string_view>
 	{
 	public:
-		CLogger(std::ostream& stream, std::string_view prefix, Color color, const char* file, size_t line);
-		virtual ~CLogger() = default;
+		CLogger(std::ostream& stream, std::string_view prefix, Color color);
+		virtual ~CLogger();
 	};
 }

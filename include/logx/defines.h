@@ -25,5 +25,3 @@
 #define LOGX_YELLOW logx::Color::yellow
 #define LOGX_WHITE logx::Color::white
 
-#define LOGX_CLOGGER(stream, prefix, color) logx::CLogger(stream, prefix, color, LOGX_FILE, LOGX_LINE)
-#define LOGX_WLOGGER(stream, prefix, color) logx::WLogger(stream, prefix, color, LOGX_FILE, LOGX_LINE)

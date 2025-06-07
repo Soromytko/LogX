@@ -21,16 +21,13 @@ namespace logx
 	class AbstractLogger
 	{
 	public:
-		AbstractLogger(stream_type& stream, string_type prefix, Color color, const char* fileName, size_t line) :
-			_stream(stream), _prefix(prefix), _color(color), _fileName(fileName), _line(line)
+		AbstractLogger(stream_type& stream, string_type prefix, Color color) :
+			_stream(stream), _prefix(prefix), _color(color)
 		{
-			prepareLog();
+
 		}
 
-		virtual ~AbstractLogger()
-		{
-			completeLog();
-		}
+		virtual ~AbstractLogger() = default;
 
 #if defined(_WIN32)
 		static WORD convert_color_to_windows(Color color)
@@ -84,23 +81,10 @@ namespace logx
 			return *this;
 		}
 
-		virtual void prepareLog()
-		{
-			AbstractLogger& logger = *this;
-			logger << _prefix << _fileName << ":" << _line << ": ";
-		}
-
-		virtual void completeLog()
-		{
-			_stream << std::endl;
-		}
-
 	protected:
 		stream_type& _stream;
 		string_type _prefix;
 		Color _color = Color::white;
-		const char* _fileName;
-		size_t _line;
 	};
 
 
