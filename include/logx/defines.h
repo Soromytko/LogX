@@ -8,6 +8,16 @@
 
 #define LOGX_FILE static_cast<const char*>(__FILE__)
 #define LOGX_LINE static_cast<size_t>(__LINE__)
+#if defined(_MSC_VER)
+#define LOGX_FUNC static_cast<const char*>(__FUNCSIG__)
+#elif defined(__GNUC__) || defined(__clang__)
+#define LOGX_FUNC static_cast<const char*>(__PRETTY_FUNCTION__)
+#else
+#define LOGX_FUNC static_cast<const char*>(__func__)
+#endif
+
+#define LOGX_CLASS (typeid(*this).name())
+
 
 #define LOGX_RED logx::Color::red
 #define LOGX_GREEN logx::Color::green
