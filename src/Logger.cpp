@@ -47,7 +47,7 @@ namespace logx
 		return ANSI_COLOR_DEFAULT;
 	}
 
-	Logger::Logger(std::ostream& stream) : _stream(&stream)
+	Logger::Logger(std::ostream& stream, std::wostream& wstream) : _stream(&stream), _wstream(&wstream)
 	{
 #if defined(WIN32)
 		if (!s_windows_is_ansi_enabled)
@@ -72,6 +72,11 @@ namespace logx
 		return *_stream;
 	}
 
+	std::wostream& Logger::getWStream() const
+	{
+		return *_wstream;
+	}
+
 	const char* Logger::getLevelAnsiColor(Level level) const
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
@@ -91,6 +96,13 @@ namespace logx
 		std::lock_guard<std::mutex> lock(_mutex);
 
 		_stream = &stream;
+	}
+
+	void Logger::setWStream(std::wostream& wstream)
+	{
+		std::lock_guard<std::mutex> lock(_mutex);
+
+		_wstream = &wstream;
 	}
 
 	void Logger::setLevelColor(Level level, Color color)
@@ -128,6 +140,13 @@ namespace logx
 		log_Unsafe(level, message, sourceLocation);
 	}
 
+	void Logger::log(Level level, const std::wstring& message, const std::source_location& sourceLocation)
+	{
+		std::lock_guard<std::mutex> lock(_mutex);
+
+		log_Unsafe(level, message, sourceLocation);
+	}
+
 	void Logger::critical(const std::string& message, const std::source_location& sourceLocation)
 	{
 		log(Level::critical, message, sourceLocation);
@@ -158,12 +177,45 @@ namespace logx
 		log(Level::trace, message, sourceLocation);
 	}
 
+	void Logger::critical(const std::wstring& message, const std::source_location& sourceLocation)
+	{
+		log(Level::critical, message, sourceLocation);
+	}
+
+	void Logger::error(const std::wstring& message, const std::source_location& sourceLocation)
+	{
+		log(Level::error, message, sourceLocation);
+	}
+
+	void Logger::warning(const std::wstring& message, const std::source_location& sourceLocation)
+	{
+		log(Level::warning, message, sourceLocation);
+	}
+
+	void Logger::info(const std::wstring& message, const std::source_location& sourceLocation)
+	{
+		log(Level::info, message, sourceLocation);
+	}
+
+	void Logger::debug(const std::wstring& message, const std::source_location& sourceLocation)
+	{
+		log(Level::debug, message, sourceLocation);
+	}
+
+	void Logger::trace(const std::wstring& message, const std::source_location& sourceLocation)
+	{
+		log(Level::trace, message, sourceLocation);
+	}
+
+	static bool shouldPrintFunctionName(Level level)
+	{
+		return level == Level::critical || level == Level::error ||
+			level == Level::debug || level == Level::trace;
+	}
+
 	void Logger::log_Unsafe(Level level, const std::string& message, const std::source_location& sourceLocation)
 	{
-		const bool shouldPrintFunctionName = level == Level::critical || level == Level::error ||
-			level == Level::debug || level == Level::trace;
-
-		const std::string functionLine = shouldPrintFunctionName ?
+		const std::string functionLine = shouldPrintFunctionName(level) ?
 			std::format("[{}:{}] ", sourceLocation.function_name(), sourceLocation.line()) :
 			std::string();
 
@@ -176,6 +228,27 @@ namespace logx
 
 		const char* ansiColor = getLevelAnsiColor_Unsafe(level);
 		(*_stream) << ansiColor << formatedMessage << ANSI_COLOR_DEFAULT << std::endl;
+	}
+
+	void Logger::log_Unsafe(Level level, const std::wstring& message, const std::source_location& sourceLocation)
+	{
+		const std::wstring functionLine = [&]() -> std::wstring {
+			if (shouldPrintFunctionName) {
+				const char* funcName = sourceLocation.function_name();
+				return std::format(L"[{}:{}] ", std::wstring(funcName, funcName + std::strlen(funcName)), sourceLocation.line());
+			}
+			return std::wstring();
+			}();
+
+		const std::wstring formatedMessage = std::format(L"[{:%Y-%m-%d %H:%M:%S}] [{}] {} {}",
+			std::chrono::system_clock::now(),
+			std::bit_cast<const wchar_t*>(getLevelName_Unsafe(level)),
+			message,
+			functionLine
+		);
+
+		const char* ansiColor = getLevelAnsiColor_Unsafe(level);
+		(*_wstream) << ansiColor << formatedMessage << ANSI_COLOR_DEFAULT << std::endl;
 	}
 
 	const char* Logger::getLevelName_Unsafe(Level level) const
