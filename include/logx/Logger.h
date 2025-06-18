@@ -14,15 +14,15 @@ namespace logx
 	class Logger
 	{
 	public:
-		Logger(std::ostream* stream);
+		Logger(std::ostream& stream = std::cout);
 		virtual ~Logger() = default;
 
-		std::ostream* getStream() const;
+		std::ostream& getStream() const;
 		const char* getLevelAnsiColor(Level level) const;
 
 		const char* getLevelName(Level level) const;
 
-		void setStream(std::ostream* stream);
+		void setStream(std::ostream& stream);
 		void setLevelColor(Level level, Color color);
 		void setLevelColor(Level level, const char* ansiColor);
 

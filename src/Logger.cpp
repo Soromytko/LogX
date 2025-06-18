@@ -47,7 +47,7 @@ namespace logx
 		return ANSI_COLOR_DEFAULT;
 	}
 
-	Logger::Logger(std::ostream* stream) : _stream(stream)
+	Logger::Logger(std::ostream& stream) : _stream(&stream)
 	{
 #if defined(WIN32)
 		if (!s_windows_is_ansi_enabled)
@@ -67,9 +67,9 @@ namespace logx
 		};
 	}
 
-	std::ostream* Logger::getStream() const
+	std::ostream& Logger::getStream() const
 	{
-		return _stream;
+		return *_stream;
 	}
 
 	const char* Logger::getLevelAnsiColor(Level level) const
@@ -86,11 +86,11 @@ namespace logx
 		return getLevelName_Unsafe(level);
 	}
 
-	void Logger::setStream(std::ostream* stream)
+	void Logger::setStream(std::ostream& stream)
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
 
-		_stream = stream;
+		_stream = &stream;
 	}
 
 	void Logger::setLevelColor(Level level, Color color)
