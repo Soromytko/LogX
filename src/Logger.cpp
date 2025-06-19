@@ -233,7 +233,7 @@ namespace logx
 	void Logger::log_Unsafe(Level level, const std::wstring& message, const std::source_location& sourceLocation)
 	{
 		const std::wstring functionLine = [&]() -> std::wstring {
-			if (shouldPrintFunctionName) {
+			if (shouldPrintFunctionName(level)) {
 				const char* funcName = sourceLocation.function_name();
 				return std::format(L"[{}:{}] ", std::wstring(funcName, funcName + std::strlen(funcName)), sourceLocation.line());
 			}
